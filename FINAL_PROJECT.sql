@@ -131,7 +131,7 @@ VALUES
 (7,4,103,'04/11/19','04/16/19'),(13,4,103,'04/11/19','04/16/19'),(15,4,103,'04/11/19','04/29/19'),(16,4,103,'04/11/19','04/29/19'),(19,4,103,'04/11/19','04/29/19'),(18,4,103,'04/11/19','04/29/19'),
 (10,5,104,'03/30/19','04/10/19'),(4,5,104,'03/30/19','04/10/19'),(2,5,104,'03/30/19','04/10/19'),(5,5,104,'04/10/19','04/29/19'),(6,5,104,'04/10/19','04/29/19'),
 (7,5,105,'03/16/19','04/29/19'),(12,2,105,'03/24/19','04/10/19'),(4,2,105,'03/24/19','04/12/19'),(10,1,105,'03/30/19','04/05/19'),(2,1,105,'03/31/19','04/01/19'),(22,5,105,'04/01/19','04/16/19'),
-(5,1,106,'04/01/19','04/16/19'),(12,4,106,'04/08/19','04/11/19'),(16,4,106,'04/08/19','04/14/19'),(8,1,106,'04/01/19','04/16/19'),(19,2,106,'04/08/19','04/16/19'),(21,3,106,'04/16/19','04/18/19'),(1,1,106,'04/16/19','04/29/19'),
+(5,1,106,'04/01/19','04/16/19'),(12,4,106,'04/08/19','04/11/19'),(16,4,106,'04/08/19','04/24/19'),(8,1,106,'04/01/19','04/16/19'),(19,2,106,'04/08/19','04/16/19'),(21,3,106,'04/16/19','04/18/19'),(1,1,106,'04/16/19','04/24/19'),
 (1,4,107,'03/30/19','04/08/19'),(7,4,107,'03/30/19','04/08/19'),(12,4,107,'03/30/19','04/08/19'),(12,2,107,'04/09/19','04/16/19'),(20,2,107,'04/09/19','04/16/19'),
 (2,1,108,'03/15/19','03/22/19'),(4,2,108,'03/23/19','03/30/19'),(12,3,108,'03/31/19','04/10/19'),(14,3,108,'03/31/19','04/10/19'),(18,4,108,'04/10/19','04/16/19'),(22,5,108,'04/16/19','04/29/19'),
 (5,5,109,'04/10/19','04/16/19'),(6,5,109,'04/10/19','04/16/19'),
@@ -165,7 +165,7 @@ VALUES
 
 ------------------------------------Procedures
 
-CREATE PROC LostTribeCountSharpstown --1 DONE (Edit to be Paramaters?)
+CREATE PROC LostTribeCountSharpstown --1 DONE 
 AS
 SELECT  Number_Of_Copies
 FROM Book_Copies
@@ -175,13 +175,16 @@ EXEC  LostTribeCountSharpstown
 
 
 
-CREATE PROC TotalLostTribeCopies--2 DONE
+CREATE PROC TotalLostTribeCopies  --DONE
 AS 
-SELECT SUM(Number_of_Copies)
+SELECT  Library_Branch.BranchName , SUM(Number_of_Copies)
 FROM Book_Copies
-WHERE BookID = 7;
+INNER JOIN Library_Branch ON Library_Branch.BranchID = Book_Copies.BranchID
+WHERE BookID = 7
+GROUP BY Library_Branch.BranchName;
 
 EXEC TotalLostTribeCopies;
+
 
 
 
@@ -200,15 +203,16 @@ EXEC NoBooksOut ;
 
 
 
-CREATE PROC DueToday  --4 DONE
+CREATE PROC DueToday  -- DONE
 AS
 SELECT Title,Borrower.Name,Borrower.Address
 FROM Book_Loans
 INNER JOIN Borrower ON Borrower.CardNo = Book_Loans.CardNo
 INNER JOIN Books ON Books.BookId = Book_Loans.BookID
-WHERE DateDue = CONVERT(varchar, GETDATE(), 1) AND  BranchId = 4 --For each book that is loaned out  
+WHERE DateDue = CONVERT(varchar, GETDATE(), 1) AND  BranchId = 4  
 
 EXEC DueToday ;
+DROP PROC DueToday
 
 
 
@@ -233,7 +237,6 @@ AS
 SELECT Borrower.Name, Borrower.Address, COUNT(BookID) AS 'BooksOut'
 FROM Book_Loans
 INNER JOIN Borrower ON Borrower.CardNo = Book_Loans.CardNo
-WHERE	DateDue > CONVERT(varchar, GETDATE(),1)
 GROUP BY  Borrower.Name, Borrower.Address
 HAVING COUNT(Book_Loans.CardNo) > 5;
 
@@ -253,5 +256,5 @@ WHERE Library_Branch.BranchID = 5    AND AuthorName = 'Stephen King'  ;
 EXEC StephenKingCentralCopies;
 
 --Testing
-
+SELECT * FROM Book_Loans
 DROP DATABASE TechAcademy_Library;
